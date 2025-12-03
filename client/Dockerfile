@@ -6,14 +6,17 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Copy all project files
+# Copy project files
 COPY . .
 
-# Build Vite
-RUN npm run dev
+# Build Vite for production
+RUN npm run build
 
-# Expose Vite preview port
+# Install serve to serve production build
+RUN npm install -g serve
+
+# Expose port
 EXPOSE 5173
 
-# Start the Vite preview server
-CMD ["npm", "run", "preview"]
+# Start production server
+CMD ["serve", "-s", "dist", "-l", "5173"]
