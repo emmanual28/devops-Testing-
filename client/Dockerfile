@@ -2,16 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
-
 RUN npm install
 
+# Copy all project files
 COPY . .
 
-ARG VITE_API_URL
-ENV VITE_API_URL=$VITE_API_URL
+# Build Vite
+RUN npm run dev
 
-RUN npm run build
-
+# Expose Vite preview port
 EXPOSE 5173
-CMD [ "npm", "run", "preview" ]
+
+# Start the Vite preview server
+CMD ["npm", "run", "preview"]

@@ -8,7 +8,7 @@ const taskRoutes = require('./routes/tasks');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
@@ -51,7 +51,7 @@ mongoose
     process.exit(1);
   });
 
-// Graceful shutdown
+//Graceful shutdown
 process.on('SIGINT', async () => {
   console.log(' change  again  to - Shutting down gracefully... ');
   await mongoose.connection.close();

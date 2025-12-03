@@ -1,13 +1,15 @@
 FROM node:20-alpine
 
-WORKDIR /app
+WORKDIR /app 
 
+# Copy package.json first for dependency installation
 COPY package*.json ./
 
-RUN npm install
+RUN npm install 
 
-COPY  . .
+# Copy the rest of your app files
+COPY . .
 
-EXPOSE 5000
+EXPOSE 5001 
 
-CMD ["node", "server.js"]
+CMD ["node","server.js"]
