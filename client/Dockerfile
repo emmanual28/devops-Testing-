@@ -14,6 +14,7 @@ ARG VITE_API_URL
 ENV VITE_API_URL = $VITE_API_URL
 
 
+ 
 # Build Vite for production
 RUN npm run build
 
