@@ -1,17 +1,9 @@
-# Node modules
 node_modules
 npm-debug.log*
-
-# Docker files
 Dockerfile
 .dockerignore
-
-# Git files
 .git
 .gitignore
-
-# Environment files
-*.env
-
-# Build output
+.env
+coverage
 dist
