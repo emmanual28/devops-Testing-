@@ -1,28 +1,28 @@
-name: build-and-lint
+name: Build, Lint & Deploy
 
-# triggers: define when this workflow should run
-# trigger on push to these branches
+# Trigger on push to selected branches, pull requests, and manual run
 on:
   push:
     branches: [main, dev, feature_one]
   pull_request:
     branches: [main, dev, feature_one]
+  workflow_dispatch:  # Allows manual deployment from Actions tab
 
-
-    # define a job (multiple jobs also)
 jobs:
   build-and-lint:
+    name: Build and Lint
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
+      # Backend
       - name: Install backend dependencies
         working-directory: server
         run: npm ci
@@ -31,6 +31,7 @@ jobs:
         working-directory: server
         run: npm run lint -- --max-warnings=0
 
+      # Frontend
       - name: Install frontend dependencies
         working-directory: client
         run: npm ci
@@ -39,19 +40,20 @@ jobs:
         working-directory: client
         run: npm run lint -- --max-warnings=0
 
-      - name: Build backend image
+      # Build Docker images
+      - name: Build backend Docker image
         run: docker build -t backend ./server
 
-      - name: Build frontend image
+      - name: Build frontend Docker image
         run: docker build -t frontend ./client
 
   deploy:
+    name: Deploy to EC2
     needs: build-and-lint
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout (optional)
-        uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: Add EC2 host to known_hosts
         run: |
@@ -60,14 +62,14 @@ jobs:
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
 
-      - name: Write SSH key
+      - name: Write SSH private key
         run: |
           echo "${EC2_KEY}" > ec2_key.pem
           chmod 600 ec2_key.pem
         env:
           EC2_KEY: ${{ secrets.EC2_KEY }}
 
-      - name: Deploy on EC2 (git pull + docker compose up -d --build)
+      - name: Deploy on EC2 (git pull + Docker Compose)
         env:
           EC2_HOST: ${{ secrets.EC2_HOST }}
           EC2_USER: ${{ secrets.EC2_USER }}
@@ -77,12 +79,16 @@ jobs:
             set -e
             cd "${EC2_APP_DIR}"
 
+            echo "Pulling latest code..."
             git fetch --all
             git reset --hard origin/main
 
+            echo "Building and starting Docker containers..."
             docker compose up -d --build
 
+            echo "Cleaning up unused Docker images..."
             docker image prune -f
 
+            echo "Deployment complete. Current container status:"
             docker compose ps
           EOF
